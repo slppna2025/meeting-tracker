@@ -320,7 +320,7 @@ tbody tr:hover { background: var(--surface); }
   <div class="tabs">
     <button class="tab active" onclick="showTab('log',this)">Log Meeting</button>
     <button class="tab" onclick="showTab('history',this)">Meeting Log</button>
-    <button class="tab" onclick="showTab('setup',this)">Google Sheets Setup</button>
+    
   </div>
 
   <!-- ═══════════════════ LOG MEETING ═══════════════════ -->
@@ -521,109 +521,7 @@ tbody tr:hover { background: var(--surface); }
     </div>
   </div>
 
-  <!-- ═══════════════════ SETUP ═══════════════════ -->
-  <div id="tab-setup" class="section">
-    <div class="alert alert-info">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-      <div>Meetings save to your browser automatically. Complete the steps below once to also push every submission to Google Sheets in real time.</div>
-    </div>
 
-    <div class="card">
-      <div class="sec-label">One-time Google Sheets connection</div>
-
-      <div class="step-block">
-        <div class="step-n">1</div>
-        <div class="step-body">
-          <h4>Create your Google Sheet</h4>
-          <p>Open <a href="https://docs.google.com/spreadsheets/u/2/" target="_blank" style="color:var(--green)">Google Sheets</a>, create a blank spreadsheet named <code>SLPPNA_Chapter_Meetings</code> and add these headers in row 1:</p>
-          <div style="background:var(--surface);border:1px solid var(--rule);border-radius:7px;padding:10px 14px;font-family:monospace;font-size:11.5px;color:var(--green);margin-top:8px;overflow-x:auto;white-space:nowrap;">
-            Timestamp | Chapter | Chapter Code | Date of Meeting | Type of Meeting | Meeting Category | Male Attendance | Female Attendance | Total Attendance | Location | Secretary General | Source
-          </div>
-        </div>
-      </div>
-
-      <div class="step-block">
-        <div class="step-n">2</div>
-        <div class="step-body">
-          <h4>Add the Apps Script</h4>
-          <p>In the Sheet go to <strong>Extensions → Apps Script</strong>. Delete any existing code, paste the script below, and click <strong>Save</strong>.</p>
-          <div class="script-box" id="apps-script-code">// SLPPNA Meeting Logger — Google Apps Script
-// Paste in Extensions > Apps Script > Save > Deploy as Web App
-
-const SHEET_NAME = "Sheet1"; // update if your tab has a different name
-
-function doPost(e) {
-  try {
-    const data  = JSON.parse(e.postData.contents);
-    const sheet = SpreadsheetApp
-                    .getActiveSpreadsheet()
-                    .getSheetByName(SHEET_NAME);
-
-    sheet.appendRow([
-      new Date().toLocaleString(),  // Timestamp
-      data.chapter,                 // Chapter
-      data.chapterCode,             // Chapter Code
-      data.dateOfMeeting,           // Date of Meeting
-      data.typeOfMeeting,           // Type of Meeting
-      data.meetingCategory,         // Meeting Category
-      data.male,                    // Male Attendance
-      data.female,                  // Female Attendance
-      data.total,                   // Total Attendance
-      data.location    || "",       // Location
-      data.secretaryGeneral,        // Secretary General
-      "SLPPNA Meeting App"          // Source
-    ]);
-
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: "ok" }))
-      .setMimeType(ContentService.MimeType.JSON);
-
-  } catch(err) {
-    return ContentService
-      .createTextOutput(JSON.stringify({
-        status: "error", message: err.toString()
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}</div>
-          <button class="copy-btn" onclick="copyScript()">Copy script</button>
-        </div>
-      </div>
-
-      <div class="step-block">
-        <div class="step-n">3</div>
-        <div class="step-body">
-          <h4>Deploy as a Web App and paste the URL</h4>
-          <p>Click <strong>Deploy → New deployment</strong> → Type: <strong>Web app</strong>. Set <em>Execute as:</em> <strong>Me</strong> and <em>Who has access:</em> <strong>Anyone</strong>. Click Deploy, authorise, and copy the Web App URL.</p>
-          <div class="url-field-row">
-            <input type="url" class="url-input" id="gscript-url" placeholder="https://script.google.com/macros/s/AK.../exec" oninput="saveUrl()">
-            <button class="btn btn-primary btn-sm" onclick="testConnection()">Test</button>
-            <button class="btn btn-ghost btn-sm" onclick="clearUrl()">Clear</button>
-          </div>
-          <div id="url-status" style="margin-top:8px;font-size:12px;color:var(--faint);"></div>
-        </div>
-      </div>
-
-      <div id="connected-alert" class="alert alert-ok" style="display:none;margin-top:1rem;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"/></svg>
-        <div><strong>Connected.</strong> All new submissions will automatically save to your Google Sheet.</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="sec-label">How it works</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.8;">
-        <p>When a Secretary General clicks <strong>Save Meeting</strong>, the app:</p>
-        <ol style="margin:8px 0 0 20px;display:flex;flex-direction:column;gap:4px;">
-          <li>Saves the record to browser storage (works offline, always)</li>
-          <li>Sends a POST request to your Google Apps Script URL</li>
-          <li>Apps Script instantly appends a new row to your Sheet</li>
-          <li>Regional leadership sees all 20 chapters' data in one live Sheet</li>
-        </ol>
-        <p style="margin-top:10px;"><strong>No server. No database. No monthly cost.</strong></p>
-      </div>
-    </div>
-  </div>
 
 </div>
 
