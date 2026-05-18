@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- fix-20260518225627 -->
 <!-- v20260518224559-LS -->
 <!-- v20260518223849 LOCK-FIX -->
 <!-- v20260518222927 -->
@@ -1001,9 +1002,12 @@ async function testConnection() {
   }
 }
 function setConnected(on) {
-  document.getElementById('conn-dot').className = 'conn-dot' + (on ? ' on' : '');
-  document.getElementById('conn-label').textContent = on ? 'Connected to Sheets' : 'Not connected';
-  if (on) document.getElementById('connected-alert').style.display = 'flex';
+  var dot = document.getElementById('conn-dot');
+  var label = document.getElementById('conn-label');
+  var alert = document.getElementById('connected-alert');
+  if (dot) dot.className = 'conn-dot' + (on ? ' on' : '');
+  if (label) label.textContent = on ? 'Connected to Sheets' : 'Not connected';
+  if (alert && on) alert.style.display = 'flex';
 }
 function copyScript() {
   const text = document.getElementById('apps-script-code').textContent;
