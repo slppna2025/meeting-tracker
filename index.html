@@ -330,7 +330,17 @@ tbody tr:hover { background: var(--surface); }
 
         <div class="card">
           <div class="sec-label">Chapter &amp; Secretary General</div>
-          <div class="field-row">
+          <div id="chapter-locked-bar" style="display:none; background:var(--green-pale); border:1px solid var(--green-border); border-radius:8px; padding:12px 16px; margin-bottom:1rem; display:none; align-items:center; gap:12px;">
+            <div style="width:38px;height:38px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;flex-shrink:0;" id="locked-avatar">?</div>
+            <div>
+              <div style="font-weight:600;font-size:14px;color:var(--green);" id="locked-name">—</div>
+              <div style="font-size:12px;color:var(--muted);" id="locked-chapter">—</div>
+            </div>
+            <div style="margin-left:auto;">
+              <span style="background:var(--green);color:white;font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;padding:3px 10px;border-radius:20px;" id="locked-code">—</span>
+            </div>
+          </div>
+          <div id="chapter-open-row" class="field-row">
             <div class="field">
               <label>Chapter <span class="req">*</span></label>
               <select id="f-chapter" onchange="onChapterChange(this.value)" required>
@@ -381,6 +391,16 @@ tbody tr:hover { background: var(--surface); }
               <span class="err-txt" id="e-date">Please enter the meeting date</span>
             </div>
             <div class="field">
+              <label>Start Time</label>
+              <input type="time" id="f-starttime">
+            </div>
+            <div class="field">
+              <label>End Time</label>
+              <input type="time" id="f-endtime">
+            </div>
+          </div>
+          <div class="field-row cols-3">
+            <div class="field">
               <label>Type of Meeting <span class="req">*</span></label>
               <select id="f-type" required>
                 <option value="">— Select type —</option>
@@ -407,11 +427,22 @@ tbody tr:hover { background: var(--surface); }
               </select>
               <span class="err-txt" id="e-category">Please select meeting category</span>
             </div>
-          </div>
-          <div class="field-row cols-1">
             <div class="field">
               <label>Meeting Location / Platform</label>
-              <input type="text" id="f-location" placeholder="e.g. Zoom, Community Hall, Member residence…">
+              <select id="f-location">
+                <option value="">— Select location —</option>
+                <option>Zoom</option>
+                <option>Microsoft Teams</option>
+                <option>Google Meet</option>
+                <option>WhatsApp Call</option>
+                <option>Conference Call</option>
+                <option>Member Residence</option>
+                <option>Community Hall</option>
+                <option>Church / Mosque</option>
+                <option>Public Library</option>
+                <option>Restaurant / Venue</option>
+                <option>Other</option>
+              </select>
             </div>
           </div>
         </div>
@@ -598,17 +629,53 @@ let scriptUrl = localStorage.getItem('slppna_script_url') || SCRIPT_URL_DEFAULT;
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
   seedSGDropdown(null);
-  // Always connected — URL baked in
-  if (scriptUrl) {
-    const urlInput = document.getElementById('gscript-url');
-    if (urlInput) {
-      urlInput.value = scriptUrl;
-      urlInput.classList.add('connected');
-    }
-    setConnected(true);
-  }
+  if (scriptUrl) { setConnected(true); }
   updateStats();
+
+  // ── Read URL param to lock chapter & SG ──
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('ch');
+  if (code) {
+    lockChapterBySGCode(code.toUpperCase());
+  }
 });
+
+function lockChapterBySGCode(code) {
+  // Find matching chapter value
+  const chapterSel = document.getElementById('f-chapter');
+  let matched = null;
+  for (let opt of chapterSel.options) {
+    if (opt.value && opt.value.split('|')[1] === code) {
+      matched = opt.value;
+      break;
+    }
+  }
+  if (!matched) return;
+
+  const [chapterName, chapterCode] = matched.split('|');
+  const sgName = CHAPTER_SG[matched];
+
+  // Set hidden values for form submission
+  chapterSel.value = matched;
+  seedSGDropdown(sgName);
+
+  // Show locked bar, hide open row
+  const bar = document.getElementById('chapter-locked-bar');
+  const row = document.getElementById('chapter-open-row');
+  bar.style.display = 'flex';
+  row.style.display = 'none';
+
+  // Set locked bar content
+  const initials = sgName ? sgName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : '??';
+  document.getElementById('locked-avatar').textContent = initials;
+  document.getElementById('locked-name').textContent = sgName || '—';
+  document.getElementById('locked-chapter').textContent = chapterName;
+  document.getElementById('locked-code').textContent = chapterCode;
+
+  // Lock chapter pill too
+  const pill = document.getElementById('chapter-pill');
+  pill.style.display = 'none';
+}
 
 // ── TABS ─────────────────────────────────────────────────────────────────
 function showTab(id, btn) {
@@ -725,6 +792,8 @@ async function submitMeeting() {
     chapter:          chapterName,
     chapterCode:      chapterCode,
     dateOfMeeting:    document.getElementById('f-date').value,
+    startTime:        document.getElementById('f-starttime').value || '',
+    endTime:          document.getElementById('f-endtime').value || '',
     typeOfMeeting:    document.getElementById('f-type').value,
     meetingCategory:  document.getElementById('f-category').value,
     male,
