@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- v20260518223849 LOCK-FIX -->
 <!-- v20260518222927 -->
 <html lang="en">
 <head>
@@ -642,40 +643,41 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function lockChapterBySGCode(code) {
-  // Find matching chapter value
-  const chapterSel = document.getElementById('f-chapter');
-  let matched = null;
-  for (let opt of chapterSel.options) {
-    if (opt.value && opt.value.split('|')[1] === code) {
-      matched = opt.value;
+  var chapterSel = document.getElementById('f-chapter');
+  var matched = null;
+  var opts = chapterSel.options;
+  for (var i = 0; i < opts.length; i++) {
+    if (opts[i].value && opts[i].value.split('|')[1] === code) {
+      matched = opts[i].value;
       break;
     }
   }
   if (!matched) return;
 
-  const [chapterName, chapterCode] = matched.split('|');
-  const sgName = CHAPTER_SG[matched];
+  var parts = matched.split('|');
+  var chapterName = parts[0];
+  var chapterCode = parts[1];
+  var sgName = CHAPTER_SG[matched] || '';
 
-  // Set hidden values for form submission
+  // Set select value for form submission
   chapterSel.value = matched;
   seedSGDropdown(sgName);
 
-  // Show locked bar, hide open row
-  const bar = document.getElementById('chapter-locked-bar');
-  const row = document.getElementById('chapter-open-row');
-  bar.style.display = 'flex';
+  // Show locked bar, hide open dropdowns
+  var bar = document.getElementById('chapter-locked-bar');
+  var row = document.getElementById('chapter-open-row');
+  bar.style.cssText = 'display:flex !important; background:#EAF4EE; border:1px solid #B2D9BF; border-radius:8px; padding:12px 16px; margin-bottom:1rem; align-items:center; gap:12px;';
   row.style.display = 'none';
 
-  // Set locked bar content
-  const initials = sgName ? sgName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : '??';
+  // Fill locked bar
+  var initials = sgName.split(' ').filter(function(w){ return w.length > 0; }).map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
   document.getElementById('locked-avatar').textContent = initials;
-  document.getElementById('locked-name').textContent = sgName || '—';
+  document.getElementById('locked-name').textContent = sgName;
   document.getElementById('locked-chapter').textContent = chapterName;
   document.getElementById('locked-code').textContent = chapterCode;
 
-  // Lock chapter pill too
-  const pill = document.getElementById('chapter-pill');
-  pill.style.display = 'none';
+  // Hide pill
+  document.getElementById('chapter-pill').style.display = 'none';
 }
 
 // ── TABS ─────────────────────────────────────────────────────────────────
@@ -838,6 +840,8 @@ function showSuccess(r) {
     <dt>Chapter</dt>       <dd>${r.chapter}</dd>
     <dt>Code</dt>          <dd>${r.chapterCode}</dd>
     <dt>Date</dt>          <dd>${fmt(r.dateOfMeeting)}</dd>
+    <dt>Start Time</dt>    <dd>${r.startTime || '—'}</dd>
+    <dt>End Time</dt>      <dd>${r.endTime || '—'}</dd>
     <dt>Type</dt>          <dd>${r.typeOfMeeting}</dd>
     <dt>Category</dt>      <dd>${r.meetingCategory}</dd>
     <dt>Male Present</dt>  <dd>${r.male}</dd>
