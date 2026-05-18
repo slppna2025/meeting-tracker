@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- v20260518224559-LS -->
 <!-- v20260518223849 LOCK-FIX -->
 <!-- v20260518222927 -->
 <html lang="en">
@@ -634,11 +635,24 @@ document.addEventListener('DOMContentLoaded', () => {
   if (scriptUrl) { setConnected(true); }
   updateStats();
 
-  // ── Read URL param to lock chapter & SG ──
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('ch');
-  if (code) {
-    lockChapterBySGCode(code.toUpperCase());
+  // ── Read chapter code from URL param OR localStorage ──
+  var urlCode = null;
+  try {
+    var qs = window.location.search;
+    if (qs) {
+      var match = qs.match(/[?&]ch=([^&]+)/);
+      if (match) urlCode = match[1].toUpperCase();
+    }
+  } catch(e) {}
+
+  // Also check localStorage (set by portal on login)
+  if (!urlCode) {
+    urlCode = localStorage.getItem('slppna_sg_code') || null;
+  }
+
+  if (urlCode) {
+    localStorage.setItem('slppna_sg_code', urlCode); // persist it
+    lockChapterBySGCode(urlCode);
   }
 });
 
