@@ -1,0 +1,25 @@
+{
+  "name": "SLPPNA Meeting Tracker",
+  "short_name": "SLPPNA SG",
+  "description": "SLPPNA Chapter Monthly Meeting Tracker for Secretary Generals",
+  "start_url": "/meeting-tracker/",
+  "scope": "/meeting-tracker/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1B5E35",
+  "theme_color": "#1B5E35",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
